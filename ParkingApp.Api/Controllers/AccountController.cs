@@ -69,6 +69,7 @@ public class AuthController : ControllerBase
                 .Include(u => u.Address)
                 .Include(u => u.Contacts)
                 .Include(u => u.Vehicles)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(u => u.Email == model.Email);
 
             if (user == null)
