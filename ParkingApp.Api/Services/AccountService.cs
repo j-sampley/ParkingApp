@@ -38,4 +38,20 @@ public class AccountService
             .AsSplitQuery()
             .FirstOrDefaultAsync(u => u.Email == email);
     }
+
+    public async Task<IdentityResult> UpdateUserEmailAsync(UserDataModel user, string newEmail)
+    {
+        var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+        return await _userManager.ChangeEmailAsync(user, newEmail, token);
+    }
+
+    public async Task<IdentityResult> UpdateUserPasswordAsync(UserDataModel user, string currentPassword, string newPassword)
+    {
+        return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+    }
+
+    public async Task<IdentityResult> DeleteUserAsync(UserDataModel user)
+    {
+        return await _userManager.DeleteAsync(user);
+    }
 }

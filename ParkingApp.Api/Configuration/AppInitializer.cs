@@ -28,6 +28,8 @@ public static class AppInitializer
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseSerilogRequestLogging();
+
         app.MapControllers();
     }
 

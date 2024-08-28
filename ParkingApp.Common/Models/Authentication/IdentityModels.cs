@@ -16,3 +16,14 @@ public record RegisterModel()
     [MinLength(1, ErrorMessage = "At least one vehicle is required.")]
     public required List<Vehicle> Vehicles { get; set; }
 }
+
+public record UpdateEmailModel
+{
+    public required string NewEmail { get; set; }
+}
+
+public record UpdatePasswordModel
+{
+    public required string CurrentPassword { get; set; }
+    public required string NewPassword { get; set; }
+}

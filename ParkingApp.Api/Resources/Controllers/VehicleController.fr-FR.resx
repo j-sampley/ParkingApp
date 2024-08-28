@@ -117,16 +117,31 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidLogin" xml:space="preserve">
-    <value>An error occured while generating the token.</value>
+  <data name="IDMismatch" xml:space="preserve">
+    <value>Incohérence de l'ID du véhicule</value>
   </data>
-  <data name="TokenGenerationError" xml:space="preserve">
-    <value>An occur occurred while generating the token.</value>
+  <data name="InvalidVehicle" xml:space="preserve">
+    <value>Modèle de véhicule invalide</value>
   </data>
-  <data name="UserAccountLocked" xml:space="preserve">
-    <value>User account locked out due to too many failed login attempts.</value>
+  <data name="VehicleCreated" xml:space="preserve">
+    <value>Véhicule créé: {0} {1} {2}</value>
   </data>
-  <data name="UserNotFound" xml:space="preserve">
-    <value>User not found.</value>
+  <data name="VehicleDeleted" xml:space="preserve">
+    <value>Véhicule supprimé avec succès</value>
+  </data>
+  <data name="VehicleFound" xml:space="preserve">
+    <value>Véhicule retourné à {0}</value>
+  </data>
+  <data name="VehicleNotFound" xml:space="preserve">
+    <value>Véhicule à {0} non trouvé</value>
+  </data>
+  <data name="VehiclesFound" xml:space="preserve">
+    <value>Véhicules retournés pour {0}</value>
+  </data>
+  <data name="VehiclesNotFound" xml:space="preserve">
+    <value>Véhicules pour {0} non trouvés</value>
+  </data>
+  <data name="VehicleUpdated" xml:space="preserve">
+    <value>Véhicule mis à jour avec succès</value>
   </data>
 </root>
