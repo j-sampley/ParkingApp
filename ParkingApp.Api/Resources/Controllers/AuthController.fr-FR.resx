@@ -117,16 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-	<data name="InvalidLogin" xml:space="preserve">
-        <value>Tentative de connexion invalide.</value>
-    </data>
-	    <data name="TokenGenerationError" xml:space="preserve">
-        <value>Une erreur s'est produite lors de la génération du jeton.</value>
-    </data>
-	    <data name="UserAccountLocked" xml:space="preserve">
-        <value>Compte utilisateur verrouillé en raison de trop nombreuses tentatives de connexion échouées.</value>
-    </data>
-	    <data name="UserNotFound" xml:space="preserve">
-        <value>Utilisateur non trouvé.</value>
-    </data>
+  <data name="InvalidLogin" xml:space="preserve">
+    <value>Tentative de connexion invalide.</value>
+  </data>
+  <data name="TokenGenerationError" xml:space="preserve">
+    <value>Une erreur s'est produite lors de la génération du jeton.</value>
+  </data>
+  <data name="UserAccountLocked" xml:space="preserve">
+    <value>Compte utilisateur verrouillé en raison de trop nombreuses tentatives de connexion échouées.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Utilisateur non trouvé.</value>
+  </data>
 </root>

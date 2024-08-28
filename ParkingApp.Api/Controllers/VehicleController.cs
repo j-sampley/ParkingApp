@@ -1,18 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+
 using ParkingApp.Api.Services;
 using ParkingApp.Common.Models.User;
 
 namespace ParkingApp.Api.Controllers;
 
-[AllowAnonymous]
 [ApiController]
 [Route("api/vehicle")]
 public class VehicleController : ControllerBase
 {
-    private readonly DbService _dbService;
+    private readonly SQLService _dbService;
 
-    public VehicleController(DbService dbService)
+    public VehicleController(SQLService dbService)
     {
         _dbService = dbService;
     }

@@ -1,19 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+
 using ParkingApp.Api.Services;
 using ParkingApp.Common.Models.User;
 
-
 namespace ParkingApp.Api.Controllers;
 
-[AllowAnonymous]
 [ApiController]
 [Route("api/contact")]
 public class ContactController : ControllerBase
 {
-    private readonly DbService _dbService;
+    private readonly SQLService _dbService;
 
-    public ContactController(DbService dbService)
+    public ContactController(SQLService dbService)
     {
         _dbService = dbService;
     }

@@ -4,11 +4,11 @@ using ParkingApp.Common.Models.User;
 
 namespace ParkingApp.Api.Services;
 
-public class DbService
+public class SQLService
 {
     private readonly ParkingDbContext _context;
 
-    public DbService(ParkingDbContext context)
+    public SQLService(ParkingDbContext context)
     {
         _context = context;
     }

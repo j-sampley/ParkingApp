@@ -1,20 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ParkingApp.Api.Database;
+﻿using Microsoft.AspNetCore.Mvc;
+
 using ParkingApp.Api.Services;
 using ParkingApp.Common.Models.User;
 
 namespace ParkingApp.Api.Controllers;
 
-[AllowAnonymous]
 [ApiController]
 [Route("api/address")]
 public class AddressController : ControllerBase
 {
-    private readonly DbService _dbService;
+    private readonly SQLService _dbService;
 
-    public AddressController(DbService dbService)
+    public AddressController(SQLService dbService)
     {
         _dbService = dbService;
     }

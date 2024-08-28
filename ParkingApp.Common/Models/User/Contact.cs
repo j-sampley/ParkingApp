@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace ParkingApp.Common.Models.User;
+﻿namespace ParkingApp.Common.Models.User;
 
 public class Contact
 {
