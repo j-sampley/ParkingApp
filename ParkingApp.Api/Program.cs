@@ -1,7 +1,7 @@
 using ParkingApp.Api.Configuration;
 using static ParkingApp.Common.Constants.AppConstants;
 
-Banner();
+ApiBanner();
 
 var builder = WebApplication.CreateBuilder(args);
 
