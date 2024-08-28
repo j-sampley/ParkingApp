@@ -10,7 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 using ParkingApp.Common.Models.User;
 using ParkingApp.Common.Models.Authentication;
-
+using Microsoft.Extensions.Localization;
+using ParkingApp.Api.Services;
+using System.Globalization;
 
 namespace ParkingApp.Api.Controllers;
 
@@ -22,12 +24,19 @@ public class AuthController : ControllerBase
     private readonly UserManager<UserDataModel> _userManager;
     private readonly SignInManager<UserDataModel> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly ILocalizationService<AuthController> _localization;
 
-    public AuthController(UserManager<UserDataModel> userManager, SignInManager<UserDataModel> signInManager, IConfiguration configuration)
+    public AuthController(
+        UserManager<UserDataModel> userManager, 
+        SignInManager<UserDataModel> signInManager,
+        IConfiguration configuration,
+        ILocalizationService<AuthController> localization
+        )
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _localization = localization;
     }
 
     [HttpPost("register")]
@@ -73,7 +82,7 @@ public class AuthController : ControllerBase
 
             if (user == null)
             {
-                return Unauthorized("User not found.");
+                return Unauthorized(_localization.GetLocalizedString("UserNotFound"));
             }
 
             try
@@ -84,15 +93,15 @@ public class AuthController : ControllerBase
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while generating the token.");
+                return StatusCode(StatusCodes.Status500InternalServerError, _localization.GetLocalizedString("TokenGenerationError"));
             }
         }
         else if (result.IsLockedOut)
         {
-            return Forbid("User account locked out due to too many failed login attempts.");
+            return StatusCode(StatusCodes.Status403Forbidden, _localization.GetLocalizedString("UserAccountLocked"));
         }
 
-        return Unauthorized("Invalid login attempt.");
+        return Unauthorized(_localization.GetLocalizedString("InvalidLogin"));
     }
 
     private string GenerateJwtToken(IdentityUser user)
