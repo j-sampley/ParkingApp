@@ -1,6 +1,7 @@
 ﻿using Serilog;
 
 using ParkingApp.Api.Database;
+using ParkingApp.Common.Configuration;
 
 namespace ParkingApp.Api.Configuration;
 
@@ -24,36 +25,12 @@ public static class AppInitializer
         }
 
         LocalizationConfiguration.SetSupportedCultures(app);
-        app.UseHttpsRedirection();
+        //app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.UseSerilogRequestLogging();
 
         app.MapControllers();
-    }
-
-    public static void LogListening(string? urls)
-    {
-        if (!string.IsNullOrEmpty(urls))
-        {
-            var urlArray = urls.Split(';');
-            string? httpAddress = null;
-            string? httpsAddress = null;
-
-            foreach (var url in urlArray)
-            {
-                if (url.StartsWith("http://"))
-                {
-                    httpAddress = url;
-                }
-                else if (url.StartsWith("https://"))
-                {
-                    httpsAddress = url;
-                }
-            }
-
-            Log.Information("Listening on: {HTTP}, {HTTPS}", httpAddress, httpsAddress);
-        }
     }
 }

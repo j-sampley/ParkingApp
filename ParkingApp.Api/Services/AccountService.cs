@@ -9,27 +9,49 @@ namespace ParkingApp.Api.Services;
 public class AccountService
 {
     private readonly UserManager<UserDataModel> _userManager;
+    private readonly SQLService _sqlService;
+    private readonly ILogger<AccountService> _logger;
 
-    public AccountService(UserManager<UserDataModel> userManager)
+    public AccountService(UserManager<UserDataModel> userManager, SQLService sqlService, ILogger<AccountService> logger)
     {
         _userManager = userManager;
+        _sqlService = sqlService;
+        _logger = logger;
     }
 
     public async Task<IdentityResult> CreateUserAsync(RegisterModel model)
     {
-        UserDataModel user = new()
+        try
         {
-            UserName = model.Email,
-            Email = model.Email,
-            Address = model.Address,
-            Contacts = model.Contacts,
-            Vehicles = model.Vehicles
-        };
+            var userId = Guid.NewGuid().ToString();
+            var user = UserDataModelFactory.CreateUser(model);
 
-        return await _userManager.CreateAsync(user, model.Password);
+            return await _userManager.CreateAsync(user, model.Password);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"An error occurred while creating the user: {ex.Message}");
+
+            var error = new IdentityError
+            {
+                Code = "UserCreationFailed",
+                Description = "An error occurred while creating the user: " + ex.Message
+            };
+            return IdentityResult.Failed(error);
+        }
     }
 
-    public async Task<UserDataModel?> LookupUserAsync(string email)
+    public async Task<UserDataModel?> LookupUserByIdAsync(string userId)
+    {
+        return await _userManager.Users
+            .Include(u => u.Address)
+            .Include(u => u.Contacts)
+            .Include(u => u.Vehicles)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
+    public async Task<UserDataModel?> LookupUserByEmailAsync(string email)
     {
         return await _userManager.Users
             .Include(u => u.Address)
@@ -48,6 +70,33 @@ public class AccountService
     public async Task<IdentityResult> UpdateUserPasswordAsync(UserDataModel user, string currentPassword, string newPassword)
     {
         return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+    }
+
+    public async Task<IdentityResult> UpdateUserAddressAsync(UserDataModel user, Address newAddress)
+    {
+        try
+        {
+            var updated = await _sqlService.UpdateAddressAsync(newAddress);
+            if (!updated)
+            {
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Code = "AddressUpdateFailed",
+                    Description = "Failed to update the address."
+                });
+            }
+
+            return IdentityResult.Success;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while updating the address.");
+            return IdentityResult.Failed(new IdentityError
+            {
+                Code = "AddressUpdateException",
+                Description = ex.Message
+            });
+        }
     }
 
     public async Task<IdentityResult> DeleteUserAsync(UserDataModel user)

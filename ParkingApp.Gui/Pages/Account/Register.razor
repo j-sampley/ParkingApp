@@ -1,0 +1,307 @@
+﻿<PageTitle>Register</PageTitle>
+
+@page "/register"
+@using MudBlazor
+@using System.Text.Json
+@using ParkingApp.Gui.Components.Common
+@using ParkingApp.Gui.Components.Account
+@using ParkingApp.Common.Models.User
+@using ParkingApp.Common.Models.Authentication
+@inject AuthService _authService
+@inject NavigationManager Navigation
+@using Keys = ParkingApp.Common.Constants.Keys.Account
+@inject ILocalizationService<Register> LocalizationService
+@inject ILogger<Register> Logger
+@inject ISnackbar Snackbar
+
+<MudGrid Justify="Justify.Center" Class="full-height">
+    <MudItem xs="12" sm="8" md="6" lg="6">
+        <MudText Typo="Typo.h3">Register for Parking</MudText>
+    </MudItem>
+</MudGrid>
+
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="12" sm="8" md="6" lg="6">
+        <ParkingCard Title="Register">
+            <Body>
+                <MudForm @ref="_form" Model="_registerModel" Validated="_onValidSubmit">
+                    <!-- Email and Password -->
+                    <MudText Typo="Typo.subtitle1">Account Info</MudText>
+                    <MudDivider Class="mb-5" />
+                    <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Label="Email" @bind-Value="_registerModel.Email" Required="true" />
+                    <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" Label="Password" @bind-Value="_registerModel.Password" InputType="InputType.Password" Required="true" />
+
+                    <!-- Address Fields -->
+                    <MudDivider Class="mt-5" />
+                    <MudText Typo="Typo.subtitle1">Address</MudText>
+                    <MudDivider Class="mb-5" />
+                    <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Address Line 1"
+                                @bind-Value="_registerModel.Address.Address1"
+                                Required="true"
+                                HelperText="Enter your street address, e.g., 123 Main St." />
+
+                    <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Address Line 2"
+                                @bind-Value="_registerModel.Address.Address2"
+                                HelperText="Apartment, suite, P.O. box, etc. (optional)" />
+
+                    <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Postal Code"
+                                @bind-Value="_registerModel.Address.PostalCode"
+                                Required="true"
+                                HelperText="Enter your postal or ZIP code" />
+
+                    <MudTextField T="string"
+                                Label="City"
+                                @bind-Value="_registerModel.Address.City"
+                                Required="true"
+                                Variant="Variant.Outlined"
+                                HelperText="Enter the name of your city or town" />
+
+                    <MudAutocomplete T="string"
+                                Label="State"
+                                SearchFunc="SearchStates"
+                                @bind-Value="_registerModel.Address.State"
+                                Required="true"
+                                Variant="Variant.Outlined"
+                                Placeholder="Start typing your state..."
+                                HelperText="Select your state from the list" />
+
+                    <!-- Contacts -->
+                    <MudDivider Class="mt-5" />
+                    <div style="display: flex; justify-content: space-between; align-items: center">
+                        <MudText Typo="Typo.subtitle1">Contacts</MudText>
+                        <AddRemovePanel Add="AddContact" Remove="RemoveContact" DisableRemove="@disableContacts"></AddRemovePanel>
+                    </div>
+                    <MudDivider Class="mb-5" />
+                    @for (int i = 0; i < _registerModel.Contacts.Count; i++)
+                    {
+                        var index = i;
+                        var contact = _registerModel.Contacts[index];
+                        <MudText Typo="Typo.subtitle2">@($"Contact {index + 1}")</MudText>
+
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="First Name"
+                                @bind-Value="contact.FirstName"
+                                Required="true"
+                                HelperText="Enter the first name of the contact" />
+
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Last Name"
+                                @bind-Value="contact.LastName"
+                                Required="true"
+                                HelperText="Enter the last name of the contact" />
+
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Phone Number"
+                                @bind-Value="contact.PhoneNumber"
+                                Required="true"
+                                HelperText="Enter the contact's phone number, e.g., (123) 456-7890" />
+
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Email"
+                                @bind-Value="contact.Email"
+                                Required="true"
+                                HelperText="Enter the contact's email address" />
+
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Relationship"
+                                @bind-Value="contact.Relationship"
+                                Required="true"
+                                HelperText="Describe your relationship to the contact, e.g., 'Spouse', 'Roommate', 'Brother'" />
+                        @if (i < _registerModel.Contacts.Count - 1)
+                        {
+                            <MudDivider Class="my-4" />
+                        }
+                    }
+
+                    <!-- Vehicles -->
+                    <MudDivider Class="mt-5" />
+                    <div style="display: flex; justify-content: space-between; align-items: center">
+                        <MudText Typo="Typo.subtitle1">Vehicles</MudText>
+                        <AddRemovePanel Add="AddVehicle" Remove="RemoveVehicle" DisableRemove="@disableVehicles"></AddRemovePanel>
+                    </div>
+                    <MudDivider Class="mb-5" />
+                    @for (int i = 0; i < _registerModel.Vehicles.Count; i++)
+                    {
+                        var index = i;
+                        var vehicle = _registerModel.Vehicles[index];
+                        <MudText Typo="Typo.subtitle2">@($"Vehicle {index + 1}")</MudText>
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Make"
+                                @bind-Value="vehicle.Make"
+                                Required="true"
+                                HelperText="Enter the manufacturer of the vehicle, e.g., Toyota, Ford." />
+
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Model"
+                                @bind-Value="vehicle.Model"
+                                Required="true"
+                                HelperText="Enter the model of the vehicle, e.g., Camry, Mustang." />
+
+                        <MudTextField T="int"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Year"
+                                @bind-Value="vehicle.Year"
+                                Required="true"
+                                HelperText="Enter the year the vehicle was manufactured, e.g., 2020." />
+
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="Color"
+                                @bind-Value="vehicle.Color"
+                                Required="true"
+                                HelperText="Enter the color of the vehicle, e.g., Red, Blue." />
+
+                        <MudTextField T="string"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Clearable="true"
+                                Label="License Plate"
+                                @bind-Value="vehicle.LicensePlate"
+                                Required="true"
+                                HelperText="Enter the vehicle's license plate number." />
+                    }
+                </MudForm>
+                @if (_errorMessage != string.Empty)
+                {
+                    <MudText Color="Color.Error">Error: @_errorMessage</MudText>
+                }
+            </Body>
+            <Actions>
+                <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="SubmitForm">Register</MudButton>
+            </Actions>
+        </ParkingCard>
+    </MudItem>
+</MudGrid>
+
+<MudOverlay Visible="_isLoading" DarkBackground="true" ZIndex="9999">
+    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" Size="Size.Large" />
+</MudOverlay>
+
+
+@code {
+    private MudForm _form;
+    private RegisterModel _registerModel = new RegisterModel
+    {
+        Email = string.Empty,
+        Password = string.Empty,
+        Address = new Address(),
+        Contacts = new List<ContactBase> { new ContactBase() },
+        Vehicles = new List<VehicleBase> { new VehicleBase() }
+    };
+
+    private string _errorMessage = string.Empty;
+    private bool _isLoading = false;
+    private bool disableContacts => !(_registerModel.Contacts.Count >= 2);
+    private bool disableVehicles => !(_registerModel.Vehicles.Count >= 2);
+
+    private void AddContact()
+    {
+        _registerModel.Contacts.Add(new ContactBase());
+    }
+
+    private void RemoveContact()
+    {
+        Console.WriteLine(disableContacts);
+        Console.WriteLine(disableVehicles);
+        if (_registerModel.Contacts.Any())
+        {
+            _registerModel.Contacts.RemoveAt(_registerModel.Contacts.Count - 1);
+        }
+    }
+
+    private void AddVehicle()
+    {
+        _registerModel.Vehicles.Add(new Vehicle());
+    }
+
+    private void RemoveVehicle()
+    {
+        if (_registerModel.Vehicles.Any())
+        {
+            _registerModel.Vehicles.RemoveAt(_registerModel.Vehicles.Count - 1);
+        }
+    }
+
+    private async Task SubmitForm()
+    {
+        _isLoading = true;
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            await _onValidSubmit();
+        }
+    }
+
+    private async Task _onValidSubmit()
+    {
+        try
+        {
+            bool isSuccess = await _authService.RegisterAsync(_registerModel);
+
+            var serializedModel = JsonSerializer.Serialize(_registerModel, new JsonSerializerOptions { WriteIndented = true });
+            Logger.LogInformation("Sent RegisterModel: {SerializedModel}", serializedModel);
+
+            if (isSuccess)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                _errorMessage = LocalizationService.GetLocalizedString(Keys.InvalidRegistration);
+                Logger.LogError(_errorMessage);
+                Snackbar.Add(_errorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = LocalizationService.GetLocalizedString(Keys.RegistrationError);
+            Logger.LogError(ex, _errorMessage);
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+
+        _isLoading = false;
+    }
+
+    private Task<IEnumerable<string>> SearchStates(string value, CancellationToken cancellationToken)
+    {
+        var states = new List<string> { "New York", "California", "Illinois", "Texas", "Arizona" };
+        return Task.FromResult(states.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase)));
+    }
+}

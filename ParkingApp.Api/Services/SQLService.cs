@@ -19,9 +19,9 @@ public class SQLService
         return await _context.Addresses.SingleOrDefaultAsync(a => a.UserId == userId);
     }
 
-    public async Task<Address?> GetAddressByIdAsync(int id)
+    public async Task<Address?> GetAddressByIdAsync(string id)
     {
-        return await _context.Addresses.FirstOrDefaultAsync(a => a.Id == id);
+        return await _context.Addresses.SingleOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<bool> UpdateAddressAsync(Address updatedAddress)
@@ -34,7 +34,8 @@ public class SQLService
             return false;
         }
 
-        existingAddress.Street = updatedAddress.Street;
+        existingAddress.Address1 = updatedAddress.Address1;
+        existingAddress.Address2 = updatedAddress.Address2;
         existingAddress.City = updatedAddress.City;
         existingAddress.State = updatedAddress.State;
         existingAddress.PostalCode = updatedAddress.PostalCode;
@@ -43,38 +44,10 @@ public class SQLService
         await _context.SaveChangesAsync();
         return true;
     }
-
-    public async Task<bool> DeleteAddressByIdAsync(int id)
-    {
-        var address = await _context.Addresses.FirstOrDefaultAsync(a => a.Id == id);
-
-        if (address == null)
-        {
-            return false;
-        }
-
-        _context.Addresses.Remove(address);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<bool> DeleteAddressByUserIdAsync(string userId)
-    {
-        var address = await _context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId);
-
-        if (address == null)
-        {
-            return false; 
-        }
-
-        _context.Addresses.Remove(address);
-        await _context.SaveChangesAsync();
-        return true;
-    }
     // Addresses end
 
     // Contacts begin
-    public async Task<Contact?> GetContactByIdAsync(int id)
+    public async Task<Contact?> GetContactByIdAsync(string id)
     {
         return await _context.Contacts
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -94,9 +67,9 @@ public class SQLService
         return newContact;
     }
 
-    public async Task<bool> UpdateContactAsync(Contact updatedContact)
+    public async Task<bool> UpdateContactAsync(string id, ContactBase updatedContact)
     {
-        var existingContact = await _context.Contacts.FirstOrDefaultAsync(c => c.Id == updatedContact.Id);
+        var existingContact = await _context.Contacts.FirstOrDefaultAsync(c => c.Id == id);
 
         if (existingContact == null)
         {
@@ -113,7 +86,7 @@ public class SQLService
         return true;
     }
 
-    public async Task<bool> DeleteContactAsync(int id)
+    public async Task<bool> DeleteContactAsync(string id)
     {
         var contact = await _context.Contacts.FirstOrDefaultAsync(c => c.Id == id);
 
@@ -129,7 +102,7 @@ public class SQLService
     // Contacts end
 
     // Vehicles begin
-    public async Task<Vehicle?> GetVehicleByIdAsync(int id)
+    public async Task<Vehicle?> GetVehicleByIdAsync(string id)
     {
         return await _context.Vehicles
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -149,9 +122,9 @@ public class SQLService
         return newVehicle;
     }
 
-    public async Task<bool> UpdateVehicleAsync(Vehicle updatedVehicle)
+    public async Task<bool> UpdateVehicleAsync(string id, VehicleBase updatedVehicle)
     {
-        var existingVehicle = await _context.Vehicles.FirstOrDefaultAsync(c => c.Id == updatedVehicle.Id);
+        var existingVehicle = await _context.Vehicles.FirstOrDefaultAsync(c => c.Id == id);
 
         if (existingVehicle == null)
         {
@@ -168,7 +141,7 @@ public class SQLService
         return true;
     }
 
-    public async Task<bool> DeleteVehicleAsync(int id)
+    public async Task<bool> DeleteVehicleAsync(string id)
     {
         var vehicle = await _context.Vehicles.FirstOrDefaultAsync(c => c.Id == id);
 

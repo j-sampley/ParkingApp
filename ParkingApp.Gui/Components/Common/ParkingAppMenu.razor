@@ -1,0 +1,50 @@
+﻿@inject AuthService AuthService
+@inject DataService DataService
+@inject ILogger<ParkingAppMenu> Logger
+@inject NavigationManager NavigationManager
+
+@if (IsAuthenticated)
+{
+    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End">
+        <MudMenuItem Icon="@Icons.Material.Filled.Delete" OnClick="DeleteAccount">Delete Account</MudMenuItem>
+        <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Logout</MudMenuItem>
+    </MudMenu>
+}
+
+@code {
+    private bool IsAuthenticated { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await HasTokenAsync();
+    }
+
+    private async Task<bool> HasTokenAsync()
+    {
+        var token = await AuthService.GetTokenAsync();
+        return !string.IsNullOrEmpty(token);
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        NavigationManager.NavigateTo("/login");
+    }
+
+    private async Task DeleteAccount()
+    {
+        var userId = await AuthService.GetUserId();
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var result = await DataService.DeleteUserAccount(userId);
+            if (result)
+            {
+                await Logout();
+            }
+            else
+            {
+                Logger.LogError("Failed to delete account.");
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+﻿@using MudBlazor;
+@typeparam T
+
+<div style="display: flex; justify-content: space-between; align-items: center">
+	<MudText Typo="Typo.subtitle1">
+		@Key
+	</MudText>
+	<MudText Typo="Typo.subtitle1">
+		@Value
+	</MudText>
+</div>
+
+@code 
+{
+	[Parameter] public required string Key { get; set; }
+	[Parameter] public required string Value { get; set; }
+}

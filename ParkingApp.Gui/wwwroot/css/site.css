@@ -66,3 +66,11 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+.mud-input-label {
+    color: #F2EFE9 !important;
+}
+
+.mud-input-helper-text > div {
+    color: #F2EFE9;
+}

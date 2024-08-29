@@ -1,2 +1,342 @@
 ﻿@page "/"
 
+@using ParkingApp.Common.Models.User
+@using ParkingApp.Gui.Components.Common
+@using ParkingApp.Gui.Components.Dialogs
+@inject HttpClient http
+@inject AuthService AuthService
+@inject DataService DataService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ILogger<Index> Logger
+
+
+@if (_userData != null)
+{
+    <MudText Typo="Typo.h4">Welcome, @_userData.Email</MudText>
+
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" md="9">
+            @if (!_editing)
+            {
+                <ParkingCard Title="Account Details">
+                    <Body>
+                        <DataRow T="string" Key="Email" Value="@_userData.Email" />
+                        <DataRow T="string" Key="Address Line 1" Value="@_userData.Address.Address1" />
+                        <DataRow T="string" Key="Address Line 2" Value="@_userData.Address.Address2" />
+                        <DataRow T="string" Key="City" Value="@_userData.Address.City" />
+                        <DataRow T="string" Key="State" Value="@_userData.Address.State" />
+                        <DataRow T="string" Key="Postal Code" Value="@_userData.Address.PostalCode" />
+                    </Body>
+                    <Actions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="ToggleEdit">Edit Account</MudButton>
+                    </Actions>
+                </ParkingCard>
+            }
+            else
+            {
+                <ParkingCard Title="Account Details">
+                    <Body>
+                        <MudTextField T="string"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    Clearable="true"
+                                    @bind-Value="_userData.Email"
+                                    Label="Email"
+                                    Required="true"
+                                    HelperText="Enter your email" />
+
+                        <MudTextField T="string"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Clearable="true"
+                                      @bind-Value="_passwordModel.CurrentPassword"
+                                      Label="Current Password"
+                                      InputType="InputType.Password"
+                                      HelperText="Enter your current password" />
+
+                        <MudTextField T="string"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Clearable="true"
+                                      @bind-Value="_passwordModel.NewPassword"
+                                      Label="New Password"
+                                      InputType="InputType.Password"
+                                      HelperText="Enter your desired new password" />
+
+                        <MudTextField T="string"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    Clearable="true"
+                                    @bind-Value="_userData.Address.Address1"
+                                    Label="Address Line 1"
+                                    Required="true"
+                                    HelperText="Enter your street address, e.g., 123 Main St."   />
+
+                        <MudTextField T="string"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    Clearable="true"
+                                    @bind-Value="_userData.Address.Address2"
+                                    Label="Address Line 2"
+                                    Required="true"
+                                    HelperText="Apartment, suite, P.O. box, etc. (optional)" />
+
+                        <MudTextField T="string"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    Clearable="true"
+                                    @bind-Value="_userData.Address.City"
+                                    Label="City"
+                                    Required="true"
+                                    HelperText="Enter the name of your city or town" />
+
+                        <MudAutocomplete T="string"
+                                    Label="State"
+                                    SearchFunc="SearchStates"
+                                    @bind-Value="_userData.Address.State"
+                                    Required="true"
+                                    Variant="Variant.Outlined"
+                                    Placeholder="Start typing your state..."
+                                    HelperText="Select your state from the list" />
+
+                        <MudTextField T="string"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    Clearable="true"
+                                    @bind-Value="_userData.Address.PostalCode"
+                                    Label="Postal Code"
+                                    Required="true"
+                                    HelperText="Enter your postal or ZIP code" />
+                    </Body>
+                    <Actions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="ToggleEdit">Confirm Changes</MudButton>
+                    </Actions>
+                </ParkingCard>
+            }
+
+        </MudItem>
+    </MudGrid>
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" md="9">
+            <ParkingCard Title="Vehicles">
+                <Body>
+                    <MudTable Items="_userData.Vehicles" Dense="true" Striped="true" Hover="true" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Make</MudTh>
+                            <MudTh>Model</MudTh>
+                            <MudTh>Year</MudTh>
+                            <MudTh>Color</MudTh>
+                            <MudTh>License Plate</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Make">@context.Make</MudTd>
+                            <MudTd DataLabel="Model">@context.Model</MudTd>
+                            <MudTd DataLabel="Year">@context.Year</MudTd>
+                            <MudTd DataLabel="Color">@context.Color</MudTd>
+                            <MudTd DataLabel="License Plate">@context.LicensePlate</MudTd>
+                            <MudTd>
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="() => EditVehicle(context)" />
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => DeleteVehicle(context.Id)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </Body>
+                <Actions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="AddNewVehicle">Add New Vehicle</MudButton>
+                </Actions>
+            </ParkingCard>
+        </MudItem>
+    </MudGrid>
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" md="9">
+            <ParkingCard Title="Contacts">
+                <Body>
+                    <MudTable Items="_userData.Contacts" Dense="true" Striped="true" Hover="true" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>First Name</MudTh>
+                            <MudTh>Last Name</MudTh>
+                            <MudTh>Email</MudTh>
+                            <MudTh>Phone Number</MudTh>
+                            <MudTh>Relationship</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+                            <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+                            <MudTd DataLabel="Email">@context.Email</MudTd>
+                            <MudTd DataLabel="Phone Number">@context.PhoneNumber</MudTd>
+                            <MudTd DataLabel="Relationship">@context.Relationship</MudTd>
+                            <MudTd>
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="() => EditContact(context)" />
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => DeleteContact(context.Id)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </Body>
+                <Actions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="AddNewContact">Add New Contact</MudButton>
+                </Actions>
+                </ParkingCard>
+        </MudItem>
+    </MudGrid>
+}
+else
+{
+    <p>Loading your account data...</p>
+}
+
+@code {
+    private UserDataModel? _userData;
+    private bool _editing = false;
+    private UpdatePasswordModel _passwordModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _userData = await DataService.GetUserDataAsync();
+
+            if (_userData == null)
+            {
+                Navigation.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while loading the user's account data.");
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private void ToggleEdit()
+    {
+        _editing = !_editing;
+        if (!_editing)
+        {
+            ConfirmChanges();    
+        }
+    }
+
+    private async void ConfirmChanges()
+    {
+        if (_userData != null)
+        {
+            var success = await DataService.UpdateUserEmailAsync(_userData.Id, _userData.Email);
+            if (!string.IsNullOrEmpty(_passwordModel.CurrentPassword) && !string.IsNullOrEmpty(_passwordModel.NewPassword))
+            {
+                success &= await DataService.UpdateUserPassword(_userData.Id, _passwordModel);
+            }
+            success &= await DataService.UpdateUserAddressAsync(_userData.Id, _userData.Address);
+
+
+            if (success)
+            {
+                _editing = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async void AddNewContact()
+    {
+        var dialog = DialogService.Show<AddContactDialog>("Add Vehicle");
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            if (result.Data != null)
+            {
+                var newContact = (ContactBase)result.Data;
+
+                await DataService.AddContactAsync(newContact);
+            }
+        }
+        _userData = await DataService.GetUserDataAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void EditContact(Contact contact)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(EditContactDialog.Contact), contact }
+        };
+
+        var dialog = DialogService.Show<EditContactDialog>("Edit Contact", parameters);
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled)
+        {
+            if (result.Data != null)
+            {
+                var updatedContact = (ContactBase)result.Data;
+
+                await DataService.UpdateContactAsync(contact.Id, updatedContact);
+            }
+        }
+        _userData = await DataService.GetUserDataAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task DeleteContact(string contactId)
+    {
+        await DataService.DeleteContactAsync(contactId);
+        _userData = await DataService.GetUserDataAsync();
+    }
+
+    ////////////////////////////////////////////
+
+    private async void AddNewVehicle()
+    {
+        var dialog = DialogService.Show<AddVehicleDialog>("Add Vehicle");
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            if (result.Data != null)
+            {
+                var newVehicle = (VehicleBase)result.Data;
+
+                await DataService.AddVehicleAsync(newVehicle);
+            }
+        }
+        _userData = await DataService.GetUserDataAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void EditVehicle(Vehicle vehicle)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(EditVehicleDialog.Vehicle), vehicle }
+        };
+
+        var dialog = DialogService.Show<EditVehicleDialog>("Edit Vehicle", parameters);
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled)
+        {
+            if (result.Data != null)
+            {
+                var updatedVehicle = (VehicleBase)result.Data;
+
+                await DataService.UpdateVehicleAsync(vehicle.Id, updatedVehicle);
+            }
+        }
+        _userData = await DataService.GetUserDataAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task DeleteVehicle(string vehicleId)
+    {
+        await DataService.DeleteVehicleAsync(vehicleId);
+        _userData = await DataService.GetUserDataAsync();
+    }
+
+
+    private Task<IEnumerable<string>> SearchStates(string value, CancellationToken cancellationToken)
+    {
+        var states = new List<string> { "New York", "California", "Illinois", "Texas", "Arizona" };
+        return Task.FromResult(states.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase)));
+    }
+}

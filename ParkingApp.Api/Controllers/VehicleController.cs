@@ -1,32 +1,35 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
 using ParkingApp.Api.Services;
+using ParkingApp.Common.Services;
 using ParkingApp.Common.Models.User;
 
 using Keys = ParkingApp.Common.Constants.Keys.Vehicle;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ParkingApp.Api.Controllers;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/vehicle")]
 public class VehicleController : ControllerBase
 {
     private readonly SQLService _dbService;
     private readonly ILocalizationService<VehicleController> _localization;
-    private readonly ILogger _logger;
+    private readonly ILogger<Vehicle> _logger;
 
     public VehicleController(
         SQLService dbService,
         ILocalizationService<VehicleController> localization,
-        ILogger logger)
+        ILogger<Vehicle> logger)
     {
         _dbService = dbService;
         _localization = localization;
         _logger = logger;
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<Vehicle>> GetVehicleById(int id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Vehicle>> GetVehicleById(string id)
     {
         string message;
         var Vehicle = await _dbService.GetVehicleByIdAsync(id);
@@ -38,7 +41,7 @@ public class VehicleController : ControllerBase
             return NotFound();
         }
 
-        message = _localization.GetLocalizedString(Keys.NotFound, id);
+        message = _localization.GetLocalizedString(Keys.Found, id);
         _logger.LogInformation(message);
         return Ok(Vehicle);
     }
@@ -61,8 +64,8 @@ public class VehicleController : ControllerBase
         return Ok(Vehicles);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<Vehicle>> CreateVehicle([FromBody] Vehicle newVehicle)
+    [HttpPost("{id}")]
+    public async Task<ActionResult> CreateVehicle(string id, [FromBody] VehicleBase newVehicle)
     {
         string message;
         if (!ModelState.IsValid)
@@ -72,23 +75,19 @@ public class VehicleController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var createdVehicle = await _dbService.CreateVehicleAsync(newVehicle);
+        var builtVehicle = VehicleFactory.BuildVehicle(newVehicle, id);
+
+        await _dbService.CreateVehicleAsync(builtVehicle);
 
         message = _localization.GetLocalizedString(Keys.Created, newVehicle.Make, newVehicle.Model, newVehicle.Year);
         _logger.LogInformation(message);
-        return CreatedAtAction(nameof(GetVehicleById), new { id = createdVehicle.Id }, createdVehicle);
+        return Ok();
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateVehicle(int id, [FromBody] Vehicle updatedVehicle)
+    public async Task<IActionResult> UpdateVehicle(string id, [FromBody] VehicleBase updatedVehicle)
     {
         string message;
-        if (id != updatedVehicle.Id)
-        {
-            message = _localization.GetLocalizedString(Keys.IDMismatch);
-            _logger.LogError(message);
-            return BadRequest(message);
-        }
 
         if (!ModelState.IsValid)
         {
@@ -97,7 +96,7 @@ public class VehicleController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var result = await _dbService.UpdateVehicleAsync(updatedVehicle);
+        var result = await _dbService.UpdateVehicleAsync(id, updatedVehicle);
 
         if (!result)
         {
@@ -112,7 +111,7 @@ public class VehicleController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteVehicle(int id)
+    public async Task<IActionResult> DeleteVehicle(string id)
     {
         string message;
         var result = await _dbService.DeleteVehicleAsync(id);

@@ -1,19 +1,21 @@
 ﻿using System.Globalization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 
-using ParkingApp.Api.Services;
+using ParkingApp.Common.Services;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace ParkingApp.Api.Configuration;
+namespace ParkingApp.Common.Configuration;
 
 public static class LocalizationConfiguration
 {
-    public static void Set(WebApplicationBuilder builder)
+    public static void Set(IServiceCollection services)
     {
-        builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-        builder.Services.AddScoped(typeof(ILocalizationService<>), typeof(LocalizationService<>));
+        services.AddLocalization(options => options.ResourcesPath = "Resources");
+        services.AddScoped(typeof(ILocalizationService<>), typeof(LocalizationService<>));
     }
 
-    public static void SetSupportedCultures(WebApplication app)
+    public static void SetSupportedCultures(IApplicationBuilder app)
     {
         var supportedCultures = new[] { "en-US", "fr-FR" };
 

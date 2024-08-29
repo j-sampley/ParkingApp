@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
 using ParkingApp.Api.Services;
+using ParkingApp.Common.Services;
 using ParkingApp.Common.Models.User;
 
 using Keys =  ParkingApp.Common.Constants.Keys.Address;
@@ -26,7 +27,7 @@ public class AddressController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Address>> GetAddress(int id)
+    public async Task<ActionResult<Address>> GetAddressById(string id)
     {
         string message;
         var address = await _dbService.GetAddressByIdAsync(id);
@@ -44,7 +45,7 @@ public class AddressController : ControllerBase
     }
 
     [HttpGet("{userId}")]
-    public async Task<ActionResult<Address>> GetAddress(string userId)
+    public async Task<ActionResult<Address>> GetAddressByUserId(string userId)
     {
         string message;
         var address = await _dbService.GetAddressByUserIdAsync(userId);

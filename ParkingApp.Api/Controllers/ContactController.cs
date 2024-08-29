@@ -1,32 +1,35 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
 using ParkingApp.Api.Services;
+using ParkingApp.Common.Services;
 using ParkingApp.Common.Models.User;
 
 using Keys = ParkingApp.Common.Constants.Keys.Contact;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ParkingApp.Api.Controllers;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/contact")]
 public class ContactController : ControllerBase
 {
     private readonly SQLService _dbService;
     private readonly ILocalizationService<ContactController> _localization;
-    private readonly ILogger _logger;
+    private readonly ILogger<ContactController> _logger;
 
     public ContactController(
         SQLService dbService,
         ILocalizationService<ContactController> localization,
-        ILogger logger)
+        ILogger<ContactController> logger)
     {
         _dbService = dbService;
         _logger = logger;
         _localization = localization;
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<Contact>> GetContactById(int id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Contact>> GetContactById(string id)
     {
         string message;
         var contact = await _dbService.GetContactByIdAsync(id);
@@ -61,8 +64,8 @@ public class ContactController : ControllerBase
         return Ok(contacts);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<Contact>> CreateContact([FromBody] Contact newContact)
+    [HttpPost("{id}")]
+    public async Task<ActionResult> CreateContact(string id, [FromBody] ContactBase newContact)
     {
         string message;
         if (!ModelState.IsValid)
@@ -72,25 +75,19 @@ public class ContactController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var createdContact = await _dbService.CreateContactAsync(newContact);
+        var builtContact = ContactFactory.BuildContact(newContact, id);
+
+        await _dbService.CreateContactAsync(builtContact);
 
         message = _localization.GetLocalizedString(Keys.Created, newContact.Email);
         _logger.LogInformation(message);
-
-        return CreatedAtAction(nameof(GetContactById), new { id = createdContact.Id }, createdContact);
+        return Ok();
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateContact(int id, [FromBody] Contact updatedContact)
+    public async Task<IActionResult> UpdateContact(string id, [FromBody] ContactBase updatedContact)
     {
         string message;
-        if (id != updatedContact.Id)
-        {
-            message = _localization.GetLocalizedString(Keys.IDMismatch);
-            _logger.LogError(message);
-            return BadRequest(message);
-        }
-
         if (!ModelState.IsValid)
         {
             message = _localization.GetLocalizedString(Keys.InvalidContact);
@@ -98,7 +95,7 @@ public class ContactController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var result = await _dbService.UpdateContactAsync(updatedContact);
+        var result = await _dbService.UpdateContactAsync(id, updatedContact);
 
         if (!result)
         {
@@ -113,7 +110,7 @@ public class ContactController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteContact(int id)
+    public async Task<IActionResult> DeleteContact(string id)
     {
         string message;
         var result = await _dbService.DeleteContactAsync(id);

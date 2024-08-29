@@ -1,0 +1,17 @@
+﻿@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthService.GetTokenAsync();
+        if (string.IsNullOrEmpty(token))
+        {
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            Navigation.NavigateTo("/", true);
+        }
+    }
+}

@@ -1,33 +1,21 @@
-using MudBlazor.Services;
-
-using ParkingApp.Gui.Data;
-
+using ParkingApp.Gui.Configuration;
+using ParkingApp.Common.Configuration;
 using static ParkingApp.Common.Constants.AppConstants;
+
 
 GuiBanner();
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
-builder.Services.AddMudServices();
-builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
+LogConfiguration.Set(builder.Host);
+CultureConfiguration.Set(builder.Configuration);
+LocalizationConfiguration.Set(builder.Services);
+GuiConfiguration.Set(builder.Services);
 
 var app = builder.Build();
+var urls = builder.Configuration["Urls"];
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
+LogConfiguration.LogListening(urls);
+AppInitializer.ConfigureApp(app);
 
 app.Run();

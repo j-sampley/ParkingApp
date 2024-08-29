@@ -23,16 +23,19 @@ public class ParkingDbContext : IdentityDbContext<UserDataModel>
         modelBuilder.Entity<UserDataModel>()
             .HasOne(u => u.Address)
             .WithOne()
-            .HasForeignKey<UserDataModel>(u => u.Key);
+            .HasForeignKey<UserDataModel>(u => u.Id)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserDataModel>()
             .HasMany(u => u.Contacts)
             .WithOne()
-            .HasForeignKey(c => c.UserKey);
+            .HasForeignKey(c => c.UserKey)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserDataModel>()
             .HasMany(u => u.Vehicles)
             .WithOne()
-            .HasForeignKey(c => c.UserKey);
+            .HasForeignKey(c => c.UserKey)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

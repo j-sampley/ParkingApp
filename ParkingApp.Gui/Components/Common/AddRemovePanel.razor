@@ -1,0 +1,19 @@
+﻿<div class="@Class" title="@Title">
+	<MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" OnClick="Add" Disabled="DisableAdd"></MudIconButton>
+	<MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.RemoveCircleOutline" Color="Color.Error" OnClick="Remove" Disabled="DisableRemove"></MudIconButton>
+</div>
+
+@code {
+	[Parameter]
+	public required Action Add { get; set; }
+	[Parameter]
+	public required Action Remove { get; set; }
+	[Parameter]
+	public required string Class { get; set; }
+	[Parameter]
+	public required string Title { get; set; }
+	[Parameter]
+	public bool DisableAdd { get; set; }
+	[Parameter]
+	public bool DisableRemove { get; set; }
+}

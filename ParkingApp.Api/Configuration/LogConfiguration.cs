@@ -16,4 +16,28 @@ public static class LogConfiguration
          .CreateLogger();
         host.UseSerilog();
     }
+
+    public static void LogListening(string? urls)
+    {
+        if (!string.IsNullOrEmpty(urls))
+        {
+            var urlArray = urls.Split(';');
+            string? httpAddress = null;
+            string? httpsAddress = null;
+
+            foreach (var url in urlArray)
+            {
+                if (url.StartsWith("http://"))
+                {
+                    httpAddress = url;
+                }
+                else if (url.StartsWith("https://"))
+                {
+                    httpsAddress = url;
+                }
+            }
+
+            Log.Information("Listening on: {HTTP}, {HTTPS}", httpAddress, httpsAddress);
+        }
+    }
 }

@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 
 using ParkingApp.Api.Utils;
 using ParkingApp.Api.Services;
+using ParkingApp.Common.Services;
 using ParkingApp.Common.Models.User;
 using ParkingApp.Common.Models.Authentication;
 
 using Keys = ParkingApp.Common.Constants.Keys.Account;
+using System.Text.Json;
 
 namespace ParkingApp.Api.Controllers;
 
@@ -41,13 +43,6 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
         string message;
-        if (!ModelState.IsValid)
-        {
-            message = _localization.GetLocalizedString(Keys.InvalidRegistration);
-            _logger.LogError(message);
-            return BadRequest(ModelState);
-        }
-
         var result = await _accountService.CreateUserAsync(model);
 
         if (result.Succeeded)
@@ -56,7 +51,9 @@ public class AccountController : ControllerBase
             _logger.LogInformation(message);
             return Ok();
         }
-        _logger.LogError(Keys.BadRegistration);
+        message = _localization.GetLocalizedString(Keys.BadRegistration);
+        var errors = JsonSerializer.Serialize(result.Errors);
+        Console.WriteLine(errors);
         return BadRequest(result.Errors);
     }
 
@@ -68,7 +65,7 @@ public class AccountController : ControllerBase
 
         if (result.Succeeded)
         {
-            var user = await _accountService.LookupUserAsync(model.Email);
+            var user = await _accountService.LookupUserByEmailAsync(model.Email);
 
             if (user == null)
             {
@@ -80,7 +77,8 @@ public class AccountController : ControllerBase
             try
             {
                 var token = JwtHelper.GenerateToken(user, _configuration);
-                LoginResponse response = new(token, user);
+
+                LoginResponse response = new(token, user.Id);
                 message = _localization.GetLocalizedString(Keys.LoggedIn, model.Email);
                 _logger.LogInformation(message);
                 return Ok(response);
@@ -104,12 +102,29 @@ public class AccountController : ControllerBase
         return Unauthorized(message);
     }
 
-    [HttpPut("update-email/{email}")]
-    public async Task<IActionResult> UpdateEmail(string email, [FromBody] UpdateEmailModel model)
+    [Authorize]
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetUserById(string userId)
+    {
+        var user = await _accountService.LookupUserByIdAsync(userId);
+
+        if (user == null)
+        {
+            var message = _localization.GetLocalizedString(Keys.NotFound);
+            _logger.LogError(message);
+            return NotFound(message);
+        }
+
+        return Ok(user);
+    }
+
+    [Authorize]
+    [HttpPut("user/{userId}/email")]
+    public async Task<IActionResult> UpdateUserEmail(string userId, [FromBody] string email)
     {
         string message;
 
-        var user = await _accountService.LookupUserAsync(email);
+        var user = await _accountService.LookupUserByIdAsync(userId);
         if (user == null)
         {
             message = _localization.GetLocalizedString(Keys.NotFound);
@@ -117,25 +132,26 @@ public class AccountController : ControllerBase
             return NotFound(message);
         }
 
-        var result = await _accountService.UpdateUserEmailAsync(user, model.NewEmail);
+        var result = await _accountService.UpdateUserEmailAsync(user, email);
         if (result.Succeeded)
         {
-            message = _localization.GetLocalizedString(Keys.EmailUpdated, user.Email!, model.NewEmail);
+            message = _localization.GetLocalizedString(Keys.Updated, email);
             _logger.LogInformation(message);
-            return NoContent();
+            return Ok(user); 
         }
 
-        message = _localization.GetLocalizedString(Keys.EmailUpdateFailed);
+        message = _localization.GetLocalizedString(Keys.UpdateFailed);
         _logger.LogError(message);
         return BadRequest(result.Errors);
     }
 
-    [HttpPut("update-password/{email}")]
-    public async Task<IActionResult> UpdatePassword(string email, [FromBody] UpdatePasswordModel model)
+    [Authorize]
+    [HttpPut("user/{userId}/password")]
+    public async Task<IActionResult> UpdateUserPassword(string userId, [FromBody] UpdatePasswordModel passwordModel)
     {
         string message;
 
-        var user = await _accountService.LookupUserAsync(email);
+        var user = await _accountService.LookupUserByIdAsync(userId);
         if (user == null)
         {
             message = _localization.GetLocalizedString(Keys.NotFound);
@@ -143,25 +159,53 @@ public class AccountController : ControllerBase
             return NotFound(message);
         }
 
-        var result = await _accountService.UpdateUserPasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        var result = await _accountService.UpdateUserPasswordAsync(user, passwordModel.CurrentPassword, passwordModel.NewPassword);
         if (result.Succeeded)
         {
-            message = _localization.GetLocalizedString(Keys.PasswordUpdated);
+            message = _localization.GetLocalizedString(Keys.Updated, user.Email);
             _logger.LogInformation(message);
-            return NoContent();
+            return Ok(user);
         }
 
-        message = _localization.GetLocalizedString(Keys.PasswordUpdateFailed);
+        message = _localization.GetLocalizedString(Keys.UpdateFailed);
         _logger.LogError(message);
         return BadRequest(result.Errors);
     }
 
-    [HttpDelete("delete/{email}")]
-    public async Task<IActionResult> DeleteAccount(string email)
+    [Authorize]
+    [HttpPut("user/{userId}/address")]
+    public async Task<IActionResult> UpdateUserAddress(string userId, [FromBody] Address newAddress)
     {
         string message;
 
-        var user = await _accountService.LookupUserAsync(email);
+        var user = await _accountService.LookupUserByIdAsync(userId);
+        if (user == null)
+        {
+            message = _localization.GetLocalizedString(Keys.NotFound);
+            _logger.LogError(message);
+            return NotFound(message);
+        }
+
+        var result = await _accountService.UpdateUserAddressAsync(user, newAddress);
+        if (result.Succeeded)
+        {
+            message = _localization.GetLocalizedString(Keys.Updated, user.Email);
+            _logger.LogInformation(message);
+            return Ok(user);
+        }
+
+        message = _localization.GetLocalizedString(Keys.UpdateFailed);
+        _logger.LogError(message);
+        return BadRequest(result.Errors);
+    }
+
+    [Authorize]
+    [HttpDelete("user/{id}")]
+    public async Task<IActionResult> DeleteAccount(string id)
+    {
+        string message;
+
+        var user = await _accountService.LookupUserByIdAsync(id);
         if (user == null)
         {
             message = _localization.GetLocalizedString(Keys.NotFound);
@@ -172,7 +216,7 @@ public class AccountController : ControllerBase
         var result = await _accountService.DeleteUserAsync(user);
         if (result.Succeeded)
         {
-            message = _localization.GetLocalizedString(Keys.Deleted, email);
+            message = _localization.GetLocalizedString(Keys.Deleted, user.Id);
             _logger.LogInformation(message);
             return NoContent();
         }

@@ -1,0 +1,53 @@
+﻿@using MudBlazor
+@using ParkingApp.Common.Models.User
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.Make"
+                Label="Make"
+                Required="true"
+                HelperText="Enter the manufacturer of the vehicle, e.g., Toyota, Ford." />
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.Model"
+                Label="Model"
+                Required="true"
+                HelperText="Enter the model of the vehicle, e.g., Camry, Mustang." />
+
+<MudTextField T="int"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.Year"
+                Label="Year"
+                Required="true"
+                HelperText="Enter the year the vehicle was manufactured, e.g., 2020." />
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.Color"
+                Label="Color"
+                Required="true"
+                HelperText="Enter the color of the vehicle, e.g., Red, Blue." />
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.LicensePlate"
+                Label="License Plate"
+                Required="true"
+                HelperText="Enter the vehicle's license plate number" />
+
+
+@code {
+    [Parameter]
+    public VehicleBase Model { get; set; } = new VehicleBase();
+}

@@ -6,7 +6,9 @@ public static class Keys
     {
         public const string BadRegistration = "BadRegistration";
         public const string InvalidLogin = "InvalidLogin";
+        public const string LoginError = "LoginError";
         public const string InvalidRegistration = "InvalidRegistration";
+        public const string RegistrationError = "RegistrationError";
         public const string TokenGenerationError = "TokenGenerationError";
         public const string NotFound = "UserNotFound";
         public const string LoggedIn = "UserLoggedIn";
@@ -18,6 +20,8 @@ public static class Keys
         public const string Deleted = "UserAccountDeleted";
         public const string DeletionFailed = "UserAccountDeletionFailed";
         public const string Locked = "UserAccountLocked";
+        public const string Updated = "AccountUpdated";
+        public const string UpdateFailed = "AccountUpdateFailed";
 
     }
     public static class Address

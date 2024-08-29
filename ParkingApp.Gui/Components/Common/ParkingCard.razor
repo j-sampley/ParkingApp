@@ -1,0 +1,18 @@
+﻿<MudCard Class="mx-auto mt-8 mb-16 p-6">
+    <MudCardHeader>
+        <MudText Typo="Typo.h5" Align="Align.Center">@Title</MudText>
+        </MudCardHeader>
+        <MudDivider />
+        <MudCardContent>
+            @Body
+    </MudCardContent>
+    <MudCardActions Style="display: flex; justify-content: flex-end;">
+        @Actions
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public RenderFragment Body { get; set; }
+    [Parameter] public RenderFragment Actions { get; set; }
+}

@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
 
-using ParkingApp.Api.Configuration;
+using ParkingApp.Common.Configuration;
 
-namespace ParkingApp.Api.Services;
+namespace ParkingApp.Common.Services;
 
 public interface ILocalizationService<T>
 {

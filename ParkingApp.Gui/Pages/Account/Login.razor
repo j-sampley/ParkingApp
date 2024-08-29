@@ -1,0 +1,109 @@
+﻿<PageTitle>Login</PageTitle>
+
+@page "/login"
+@using MudBlazor
+@using ParkingApp.Gui.Components.Common
+@using Keys = ParkingApp.Common.Constants.Keys.Account
+@inject AuthService _authService
+@inject NavigationManager Navigation
+@inject ILocalizationService<Login> LocalizationService
+@inject ILogger<Login> Logger
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h3">Welcome to Parking!</MudText>
+
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="8" sm="8" md="6" lg="6">
+        <ParkingCard Title="Login">
+            <Body>
+                <MudForm @ref="_form" Model="_loginModel" Validated="_onValidSubmit">
+                    <MudTextField 
+                        T="string" 
+                        Variant="Variant.Outlined" 
+                        Margin="Margin.Dense" 
+                        Clearable="true" 
+                        Label="Email" 
+                        @bind-Value="_loginModel.Email" 
+                        Required="true" />
+
+                    <MudTextField 
+                        T="string" 
+                        Variant="Variant.Outlined" 
+                        Margin="Margin.Dense" 
+                        Clearable="true" 
+                        Label="Password" 
+                        @bind-Value="_loginModel.Password" 
+                        InputType="InputType.Password" 
+                        Required="true" />
+                </MudForm>
+                @if (_errorMessage != string.Empty)
+                {
+                    <MudText Color="Color.Error">Error: @_errorMessage</MudText>
+                }
+            </Body>
+            <Actions>
+                <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="SubmitForm">Login</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="NavigateToRegister">Register</MudButton>
+            </Actions>
+        </ParkingCard>
+	</MudItem>
+</MudGrid>
+
+<MudOverlay Visible="_isLoading" DarkBackground="true" ZIndex="9999" AutoClose="true">
+    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" Size="Size.Large" />
+</MudOverlay>
+
+
+@code {
+    private MudForm _form;
+    private LoginModel _loginModel = new LoginModel
+        {
+            Email = string.Empty,
+            Password = string.Empty
+    };
+
+    private string _errorMessage = string.Empty;
+    private bool _isLoading = false;
+
+    private async Task SubmitForm()
+    {
+        _isLoading = true;
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            await _onValidSubmit();
+        }
+    }
+
+    private async Task _onValidSubmit()
+    {
+        try
+        {
+            var isSuccess = await _authService.LoginAsync(_loginModel);
+
+            if (isSuccess)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                _errorMessage = LocalizationService.GetLocalizedString(Keys.InvalidLogin);
+                Logger.LogError(_errorMessage);
+                Snackbar.Add(_errorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = LocalizationService.GetLocalizedString(Keys.LoginError);
+            Logger.LogError(ex, _errorMessage);
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+
+        _isLoading = false;
+    }
+
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+}

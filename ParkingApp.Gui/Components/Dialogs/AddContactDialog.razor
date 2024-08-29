@@ -1,0 +1,41 @@
+﻿@using MudBlazor
+
+@using ParkingApp.Common.Models.User
+@using ParkingApp.Gui.Components.Account
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5">
+            Add Contact
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="form" Model="@newContact">
+            <ContactEditor Model="@newContact" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private MudForm form;
+    private ContactBase newContact = new ContactBase();
+
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    private async void Submit()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(newContact));
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -127,7 +127,7 @@
     <value>Failed to update email</value>
   </data>
   <data name="InvalidLogin" xml:space="preserve">
-    <value>An error occured while generating the token</value>
+    <value>Invalid login attempt</value>
   </data>
   <data name="InvalidRegistration" xml:space="preserve">
     <value>Invalid registration model</value>

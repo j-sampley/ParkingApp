@@ -1,0 +1,55 @@
+﻿@using MudBlazor
+
+@using ParkingApp.Common.Models.User
+
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.FirstName"
+                Label="First Name"
+                Required="true"
+                HelperText="Enter the first name of the contact" />
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.LastName"
+                Label="Last Name"
+                Required="true"
+                HelperText="Enter the last name of the contact" />
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.PhoneNumber"
+                Label="Phone Number"
+                Required="true"
+                HelperText="Enter the contact's phone number, e.g., (123) 456-7890" />
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.Email"
+                Label="Email"
+                Required="true"
+                HelperText="Enter the contact's email address" />
+
+<MudTextField T="string"
+                Variant="Variant.Outlined"
+                Margin="Margin.Dense"
+                Clearable="true"
+                @bind-Value="Model.Relationship"
+                Label="Relationship"
+                Required="true"
+                HelperText="Describe your relationship to the contact, e.g., 'Spouse', 'Roommate', 'Brother'" />
+
+
+@code {
+    [Parameter]
+    public ContactBase Model { get; set; } = new ContactBase();
+}
