@@ -14,12 +14,12 @@ namespace ParkingApp.Api.Controllers;
 [Route("api/contact")]
 public class ContactController : ControllerBase
 {
-    private readonly SQLService _dbService;
+    private readonly ISQLService _dbService;
     private readonly ILocalizationService<ContactController> _localization;
     private readonly ILogger<ContactController> _logger;
 
     public ContactController(
-        SQLService dbService,
+        ISQLService dbService,
         ILocalizationService<ContactController> localization,
         ILogger<ContactController> logger)
     {

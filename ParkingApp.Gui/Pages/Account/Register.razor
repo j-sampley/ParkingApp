@@ -7,12 +7,13 @@
 @using ParkingApp.Gui.Components.Account
 @using ParkingApp.Common.Models.User
 @using ParkingApp.Common.Models.Authentication
-@inject AuthService _authService
-@inject NavigationManager Navigation
 @using Keys = ParkingApp.Common.Constants.Keys.Account
+@inject AuthService _authService
+@inject DataService DataService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 @inject ILocalizationService<Register> LocalizationService
 @inject ILogger<Register> Logger
-@inject ISnackbar Snackbar
 
 <MudGrid Justify="Justify.Center" Class="full-height">
     <MudItem xs="12" sm="8" md="6" lg="6">
@@ -299,9 +300,8 @@
         _isLoading = false;
     }
 
-    private Task<IEnumerable<string>> SearchStates(string value, CancellationToken cancellationToken)
+    private async Task<IEnumerable<string>> SearchStates(string value, CancellationToken cancellationToken)
     {
-        var states = new List<string> { "New York", "California", "Illinois", "Texas", "Arizona" };
-        return Task.FromResult(states.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase)));
+        return await DataService.SearchStatesAsync(value, cancellationToken);
     }
 }

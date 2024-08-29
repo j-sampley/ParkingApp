@@ -7,14 +7,13 @@
 @inject AuthService AuthService
 @inject DataService DataService
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject ILogger<Index> Logger
 
 
 @if (_userData != null)
 {
-    <MudText Typo="Typo.h4">Welcome, @_userData.Email</MudText>
-
     <MudGrid Justify="Justify.Center">
         <MudItem xs="12" md="9">
             @if (!_editing)
@@ -224,12 +223,37 @@ else
         if (_userData != null)
         {
             var success = await DataService.UpdateUserEmailAsync(_userData.Id, _userData.Email);
+            if (success)
+            {
+                Snackbar.Add("Email updated successfully!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to update email.", Severity.Error);
+            }
+
             if (!string.IsNullOrEmpty(_passwordModel.CurrentPassword) && !string.IsNullOrEmpty(_passwordModel.NewPassword))
             {
                 success &= await DataService.UpdateUserPassword(_userData.Id, _passwordModel);
+                if (success)
+                {
+                    Snackbar.Add("Password updated successfully!", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Failed to update password.", Severity.Error);
+                }
             }
-            success &= await DataService.UpdateUserAddressAsync(_userData.Id, _userData.Address);
 
+            success &= await DataService.UpdateUserAddressAsync(_userData.Id, _userData.Address);
+            if (success)
+            {
+                Snackbar.Add("Address updated successfully!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to update address.", Severity.Error);
+            }
 
             if (success)
             {
@@ -241,7 +265,7 @@ else
 
     private async void AddNewContact()
     {
-        var dialog = DialogService.Show<AddContactDialog>("Add Vehicle");
+        var dialog = DialogService.Show<AddContactDialog>("Add Contact");
         var result = await dialog.Result;
 
         if (result != null && !result.Canceled)
@@ -249,8 +273,16 @@ else
             if (result.Data != null)
             {
                 var newContact = (ContactBase)result.Data;
+                var success = await DataService.AddContactAsync(newContact);
 
-                await DataService.AddContactAsync(newContact);
+                if (success)
+                {
+                    Snackbar.Add("Contact added successfully!", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Failed to add contact.", Severity.Error);
+                }
             }
         }
         _userData = await DataService.GetUserDataAsync();
@@ -260,19 +292,28 @@ else
     private async void EditContact(Contact contact)
     {
         var parameters = new DialogParameters
-        {
-            { nameof(EditContactDialog.Contact), contact }
-        };
+    {
+        { nameof(EditContactDialog.Contact), contact }
+    };
 
         var dialog = DialogService.Show<EditContactDialog>("Edit Contact", parameters);
         var result = await dialog.Result;
+
         if (result != null && !result.Canceled)
         {
             if (result.Data != null)
             {
                 var updatedContact = (ContactBase)result.Data;
+                var success = await DataService.UpdateContactAsync(contact.Id, updatedContact);
 
-                await DataService.UpdateContactAsync(contact.Id, updatedContact);
+                if (success)
+                {
+                    Snackbar.Add("Contact updated successfully!", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Failed to update contact.", Severity.Error);
+                }
             }
         }
         _userData = await DataService.GetUserDataAsync();
@@ -281,11 +322,17 @@ else
 
     private async Task DeleteContact(string contactId)
     {
-        await DataService.DeleteContactAsync(contactId);
+        var success = await DataService.DeleteContactAsync(contactId);
+        if (success)
+        {
+            Snackbar.Add("Contact deleted successfully!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Failed to delete contact.", Severity.Error);
+        }
         _userData = await DataService.GetUserDataAsync();
     }
-
-    ////////////////////////////////////////////
 
     private async void AddNewVehicle()
     {
@@ -297,8 +344,16 @@ else
             if (result.Data != null)
             {
                 var newVehicle = (VehicleBase)result.Data;
+                var success = await DataService.AddVehicleAsync(newVehicle);
 
-                await DataService.AddVehicleAsync(newVehicle);
+                if (success)
+                {
+                    Snackbar.Add("Vehicle added successfully!", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Failed to add vehicle.", Severity.Error);
+                }
             }
         }
         _userData = await DataService.GetUserDataAsync();
@@ -308,19 +363,28 @@ else
     private async void EditVehicle(Vehicle vehicle)
     {
         var parameters = new DialogParameters
-        {
-            { nameof(EditVehicleDialog.Vehicle), vehicle }
-        };
+    {
+        { nameof(EditVehicleDialog.Vehicle), vehicle }
+    };
 
         var dialog = DialogService.Show<EditVehicleDialog>("Edit Vehicle", parameters);
         var result = await dialog.Result;
+
         if (result != null && !result.Canceled)
         {
             if (result.Data != null)
             {
                 var updatedVehicle = (VehicleBase)result.Data;
+                var success = await DataService.UpdateVehicleAsync(vehicle.Id, updatedVehicle);
 
-                await DataService.UpdateVehicleAsync(vehicle.Id, updatedVehicle);
+                if (success)
+                {
+                    Snackbar.Add("Vehicle updated successfully!", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Failed to update vehicle.", Severity.Error);
+                }
             }
         }
         _userData = await DataService.GetUserDataAsync();
@@ -329,14 +393,22 @@ else
 
     private async Task DeleteVehicle(string vehicleId)
     {
-        await DataService.DeleteVehicleAsync(vehicleId);
+        var success = await DataService.DeleteVehicleAsync(vehicleId);
+        if (success)
+        {
+            Snackbar.Add("Vehicle deleted successfully!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Failed to delete vehicle.", Severity.Error);
+        }
         _userData = await DataService.GetUserDataAsync();
     }
 
 
-    private Task<IEnumerable<string>> SearchStates(string value, CancellationToken cancellationToken)
+    private async Task<IEnumerable<string>> SearchStates(string value, CancellationToken cancellationToken)
     {
-        var states = new List<string> { "New York", "California", "Illinois", "Texas", "Arizona" };
-        return Task.FromResult(states.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase)));
+        return await DataService.SearchStatesAsync(value, cancellationToken);
     }
+
 }

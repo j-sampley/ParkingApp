@@ -44,6 +44,7 @@ public static class AuthConfiguration
         builder.Services.AddAuthorization();
         builder.Services.AddScoped<AccountService>();
         builder.Services.AddScoped<SQLService>();
+        builder.Services.AddScoped<ISQLService, SQLService>();
 
     }
 }

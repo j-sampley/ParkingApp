@@ -1,6 +1,9 @@
-﻿using ParkingApp.Common.Models.Authentication;
+﻿using ParkingApp.Common.Models;
+using ParkingApp.Common.Models.Authentication;
 using ParkingApp.Common.Models.User;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace ParkingApp.Gui.Services;
 
@@ -16,30 +19,6 @@ public class DataService
         _httpClient.BaseAddress = new Uri("http://localhost:5000/");
         _logger = logger;
         _authService = authService;
-    }
-
-    public async Task<UserDataModel?> GetUserDataAsync()
-    {
-        var userId = await GetUserIdAsync();
-        if (userId == null) return null;
-
-        UserDataModel? userData = null;
-
-        bool success = await HandleHttpRequestAsync(
-            async () =>
-            {
-                var response = await _httpClient.GetAsync($"api/auth/user/{userId}");
-                if (response.IsSuccessStatusCode)
-                {
-                    userData = await response.Content.ReadFromJsonAsync<UserDataModel>();
-                }
-                return response;
-            },
-            "User data retrieved successfully.",
-            "Failed to retrieve user data."
-        );
-
-        return success ? userData : null;
     }
 
     public async Task<bool> UpdateUserEmailAsync(string id, string email)
@@ -182,5 +161,58 @@ public class DataService
         }
 
         return false;
+    }
+
+    public async Task<UserDataModel?> GetUserDataAsync()
+    {
+        var userId = await GetUserIdAsync();
+        if (userId == null) return null;
+
+        UserDataModel? userData = null;
+
+        bool success = await HandleHttpRequestAsync(
+            async () =>
+            {
+                var response = await _httpClient.GetAsync($"api/auth/user/{userId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    userData = await response.Content.ReadFromJsonAsync<UserDataModel>();
+                }
+                return response;
+            },
+            "User data retrieved successfully.",
+            "Failed to retrieve user data."
+        );
+
+        return success ? userData : null;
+    }
+
+    public async Task<IEnumerable<string>> SearchStatesAsync(string value, CancellationToken cancellationToken)
+    {
+        List<string>? states = null;
+
+        bool success = await HandleHttpRequestAsync(
+            async () =>
+            {
+                var response = await _httpClient.GetAsync($"api/states", cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync(cancellationToken);
+                    states = JsonSerializer.Deserialize<List<string>>(json);
+                }
+                return response;
+            },
+            "States retrieved successfully.",
+            "Failed to retrieve states."
+        );
+
+        if (success && states != null)
+        {
+            return states
+                .Where(x => !string.IsNullOrEmpty(x) && x.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+                .ToList();
+        }
+
+        return Enumerable.Empty<string>();
     }
 }

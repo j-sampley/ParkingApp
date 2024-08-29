@@ -4,7 +4,23 @@ using ParkingApp.Common.Models.User;
 
 namespace ParkingApp.Api.Services;
 
-public class SQLService
+public interface ISQLService
+{
+    // Vehicle-related methods
+    Task<Vehicle?> GetVehicleByIdAsync(string id);
+    Task<List<Vehicle>> GetVehiclesByUserIdAsync(string userKey);
+    Task<Vehicle> CreateVehicleAsync(Vehicle vehicle);
+    Task<bool> UpdateVehicleAsync(string id, VehicleBase vehicle);
+    Task<bool> DeleteVehicleAsync(string id);
+
+    // Contact-related methods
+    Task<Contact?> GetContactByIdAsync(string id);
+    Task<List<Contact>> GetContactsByUserIdAsync(string userKey);
+    Task<Contact> CreateContactAsync(Contact newContact);
+    Task<bool> UpdateContactAsync(string id, ContactBase updatedContact);
+    Task<bool> DeleteContactAsync(string id);
+}
+public class SQLService : ISQLService
 {
     private readonly ParkingDbContext _context;
 

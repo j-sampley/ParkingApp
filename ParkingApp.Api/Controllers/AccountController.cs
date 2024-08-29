@@ -53,7 +53,6 @@ public class AccountController : ControllerBase
         }
         message = _localization.GetLocalizedString(Keys.BadRegistration);
         var errors = JsonSerializer.Serialize(result.Errors);
-        Console.WriteLine(errors);
         return BadRequest(result.Errors);
     }
 

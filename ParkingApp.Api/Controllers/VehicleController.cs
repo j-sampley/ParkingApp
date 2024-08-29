@@ -14,12 +14,12 @@ namespace ParkingApp.Api.Controllers;
 [Route("api/vehicle")]
 public class VehicleController : ControllerBase
 {
-    private readonly SQLService _dbService;
+    private readonly ISQLService _dbService;
     private readonly ILocalizationService<VehicleController> _localization;
     private readonly ILogger<Vehicle> _logger;
 
     public VehicleController(
-        SQLService dbService,
+        ISQLService dbService,
         ILocalizationService<VehicleController> localization,
         ILogger<Vehicle> logger)
     {
